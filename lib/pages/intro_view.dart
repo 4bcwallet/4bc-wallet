@@ -17,6 +17,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_config.dart';
+import '../local_fourbc/edition_notice.dart';
+import '../local_fourbc/welcome_words.dart';
 import '../pages_desktop_specific/password/create_password_view.dart';
 import '../themes/stack_colors.dart';
 import '../themes/theme_providers.dart';
@@ -155,6 +157,8 @@ class AppNameText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 4bc Wallet edition: its own setting of the name on a phone.
+    if (isFourbcEdition && !isDesktop) return const FourbcWelcomeName();
     return Text(
       AppConfig.appName,
       textAlign: TextAlign.center,
@@ -173,6 +177,8 @@ class IntroAboutText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 4bc Wallet edition: its own setting of the line under the name on a phone.
+    if (isFourbcEdition && !isDesktop) return const FourbcWelcomeLine();
     return Text(
       AppConfig.shortDescriptionText,
       textAlign: TextAlign.center,

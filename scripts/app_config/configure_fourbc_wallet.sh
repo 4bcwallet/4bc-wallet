@@ -17,11 +17,19 @@ set -x -e
 #
 # NEVER change NEW_APP_ID or _appDataDirName once anyone holds coins in the app:
 # they decide whether an installed app keeps its wallets.
+#
+# NEW_APP_ID is the partner's decision of 23 Nov 2026: com.4bcwallet.app, the domain
+# 4bcwallet.com written backwards. It is for Apple's platforms. Android does not accept
+# a part that begins with a digit: an Android build needs its own identifier, to be
+# decided the day one is built.
+#
+# The description's line break is where the welcome screen parts its two rows
+# (lib/local_fourbc/welcome_words.dart). The words are the partner's choice of 23 Nov 2026.
 
 export NEW_NAME="4bc Wallet"
-export NEW_APP_ID="com.fourbc.wallet"
-export NEW_APP_ID_CAMEL="com.fourbc.wallet"
-export NEW_APP_ID_SNAKE="com.fourbc.wallet"
+export NEW_APP_ID="com.4bcwallet.app"
+export NEW_APP_ID_CAMEL="com.4bcwallet.app"
+export NEW_APP_ID_SNAKE="com.4bcwallet.app"
 export NEW_BASIC_NAME="fourbc_wallet"
 
 NEW_PUBSPEC_NAME="fourbcwallet"
@@ -95,7 +103,7 @@ const _suffix = "Wallet";
 const _emptyWalletsMessage =
     "You do not have any wallets yet. Add your first one.";
 const _appDataDirName = "fourbcwallet";
-const _shortDescriptionText = "An open-source wallet for Bitcoin and Monero";
+const _shortDescriptionText = "Your keys. Your coins.\\nNobody else's.";
 const _commitHash = "$BUILT_COMMIT_HASH";
 
 const _mwebdExeHash = "";
