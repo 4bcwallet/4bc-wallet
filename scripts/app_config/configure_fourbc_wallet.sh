@@ -12,7 +12,8 @@ set -x -e
 #   - the feature set is Tor only: theme selection is off because the app has one look
 #     (see local/fourbc_wallet/make_theme.py), and swap, buy and the two shops are off
 #     because they need partner agreements and keys this edition does not have;
-#   - our theme is packed and the launch screen's ground colour is set to our grey.
+#   - our theme is packed, our few shared pictures are laid over Stack Duo's, and the
+#     launch screen's ground colour is set to our grey.
 #
 # NEVER change NEW_APP_ID or _appDataDirName once anyone holds coins in the app:
 # they decide whether an installed app keeps its wallets.
@@ -46,6 +47,19 @@ if [ "$(grep -c '"2B2D31"' "${PUBSPEC_FILE}")" != "5" ]; then
   echo "configure_fourbc_wallet: the launch screen colours in the pubspec template have changed shape"
   exit 1
 fi
+
+# Our shared pictures: Stack Duo's folder with our few replacements laid over it
+# (local/fourbc_wallet/svg_overrides/, same file names). The folder is rebuilt on every
+# configure and is not tracked by git. Today's one replacement: plus.svg, drawn dark,
+# because the "Add Wallet" button shows it uncoloured on our yellow.
+if [ -z "${APP_PROJECT_ROOT_DIR}" ]; then
+  echo "configure_fourbc_wallet: APP_PROJECT_ROOT_DIR is not set"
+  exit 1
+fi
+OUR_SVG_DIR="${APP_PROJECT_ROOT_DIR}/asset_sources/svg/fourbc_wallet"
+rm -rf "${OUR_SVG_DIR}"
+cp -R "${APP_PROJECT_ROOT_DIR}/asset_sources/svg/stack_duo" "${OUR_SVG_DIR}"
+cp -R "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/svg_overrides/." "${OUR_SVG_DIR}/"
 
 # Pack our theme into asset_sources/default_themes/fourbc_wallet/light.zip.
 python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/make_theme.py"
