@@ -4,7 +4,11 @@
 // Walks the first screens of a freshly installed app in the iOS simulator and
 // saves a picture of each into the app's Documents folder, from where the
 // lead's script copies them. It creates NO wallet and shows NO recovery
-// phrase: it stops at the list of coins.
+// phrase: it stops at the list of coins, then goes back and pictures the
+// settings screens (settings, about, manage nodes, security, currency).
+//
+// The package name in the imports below is the configured app's (pubspec.yaml,
+// set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
 //
 // Run:
 //   flutter test integration_test/local_screenshots/walk_test.dart -d <simulator id>
@@ -18,8 +22,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:stackduo/main.dart' as app;
-import 'package:stackduo/widgets/custom_pin_put/pin_keyboard.dart';
+import 'package:fourbcwallet/main.dart' as app;
+import 'package:fourbcwallet/widgets/custom_buttons/app_bar_icon_button.dart';
+import 'package:fourbcwallet/widgets/custom_pin_put/pin_keyboard.dart';
 
 late Directory _outDir;
 int _counter = 0;
@@ -81,6 +86,13 @@ Future<void> _typePin(WidgetTester tester, String pin) async {
     await tester.tap(key.first, warnIfMissed: false);
     await _wait(tester, 3);
   }
+}
+
+// The app draws its own back arrow (AppBarBackButton), not the system's.
+Future<void> _back(WidgetTester tester) async {
+  final back = find.byType(AppBarBackButton);
+  expect(await _waitFor(tester, back, seconds: 10), isTrue, reason: "no back");
+  await tester.tap(back.first, warnIfMissed: false);
 }
 
 void main() {
@@ -155,6 +167,27 @@ void main() {
     if (testnet.evaluate().isNotEmpty) {
       await tester.ensureVisible(testnet.first);
       await _shot(tester, "add-wallet-testnet-coins");
+    }
+
+    // 6. Back home, then the settings screens. Nothing is changed in them.
+    await _back(tester);
+    await _wait(tester, 10);
+    final settings = find.byKey(const Key("walletsViewSettingsButton"));
+    if (!await _waitFor(tester, settings, seconds: 10)) return;
+    await tester.tap(settings.first, warnIfMissed: false);
+    if (!await _waitFor(tester, find.text("About"), seconds: 10)) return;
+    await _shot(tester, "settings");
+    for (final title in ["About", "Manage nodes", "Currency", "Advanced"]) {
+      final item = find.text(title);
+      if (item.evaluate().isEmpty) continue;
+      await tester.ensureVisible(item.first);
+      await _wait(tester, 3);
+      await tester.tap(item.first, warnIfMissed: false);
+      await _wait(tester, 20);
+      await _shot(tester, "settings-${title.toLowerCase().replaceAll(" ", "-")}");
+      await _back(tester);
+      await _wait(tester, 10);
+      if (!await _waitFor(tester, find.text("About"), seconds: 10)) return;
     }
   });
 }

@@ -15,6 +15,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app_config.dart';
+import '../../../local_fourbc/edition_notice.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/git_status.dart';
 import '../../../utilities/text_styles.dart';
@@ -200,6 +201,9 @@ class AboutView extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          // 4bc Wallet edition: the notice GPL-3.0 asks of a modified version.
+                          if (isFourbcEdition) const SizedBox(height: 12),
+                          if (isFourbcEdition) const EditionNotice(),
                           if (AppConfig.coins.whereType<Tezos>().isNotEmpty)
                             const SizedBox(height: 12),
                           if (AppConfig.coins.whereType<Tezos>().isNotEmpty)
