@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../app_config.dart';
+import '../../local_fourbc/home_title.dart';
 import '../../models/isar/models/blockchain_data/address.dart';
 import '../../models/isar/models/contact_entry.dart';
 import '../../providers/global/address_book_service_provider.dart';
@@ -103,7 +104,8 @@ class _AddressBookViewState extends ConsumerState<AddressBookView> {
         );
       }
       final self = ContactEntry(
-        name: "My ${AppConfig.prefix}",
+        // 4bc Wallet edition: the same words as the home screen's title.
+        name: fourbcHomeTitle("My ${AppConfig.prefix}"),
         addresses: addresses,
         isFavorite: true,
         customId: "default",

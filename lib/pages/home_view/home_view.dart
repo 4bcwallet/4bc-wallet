@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../app_config.dart';
+import '../../local_fourbc/home_title.dart';
 import '../../providers/global/notifications_provider.dart';
 import '../../providers/global/prefs_provider.dart';
 import '../../providers/global/shopin_bit_service_provider.dart';
@@ -322,7 +323,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  "My ${AppConfig.prefix}",
+                  // 4bc Wallet edition: its own title.
+                  fourbcHomeTitle("My ${AppConfig.prefix}"),
                   style: STextStyles.navBarTitle(context),
                 ),
               ],
