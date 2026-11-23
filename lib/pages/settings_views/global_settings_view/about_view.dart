@@ -15,6 +15,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app_config.dart';
+import '../../../local_fourbc/edition_links.dart';
 import '../../../local_fourbc/edition_notice.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/git_status.dart';
@@ -190,10 +191,13 @@ class AboutView extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 CustomTextButton(
-                                  text: "https://stackwallet.com",
+                                  // 4bc Wallet edition: our own site.
+                                  text: fourbcLink("https://stackwallet.com"),
                                   onTap: () {
                                     launchUrl(
-                                      Uri.parse("https://stackwallet.com"),
+                                      Uri.parse(
+                                        fourbcLink("https://stackwallet.com"),
+                                      ),
                                       mode: LaunchMode.externalApplication,
                                     );
                                   },
@@ -270,7 +274,9 @@ class AboutView extends ConsumerWidget {
                                     ..onTap = () {
                                       launchUrl(
                                         Uri.parse(
-                                          "https://stackwallet.com/terms-of-service.html",
+                                          fourbcLink(
+                                            "https://stackwallet.com/terms-of-service.html",
+                                          ),
                                         ),
                                         mode: LaunchMode.externalApplication,
                                       );
@@ -284,7 +290,9 @@ class AboutView extends ConsumerWidget {
                                     ..onTap = () {
                                       launchUrl(
                                         Uri.parse(
-                                          "https://stackwallet.com/privacy-policy.html",
+                                          fourbcLink(
+                                            "https://stackwallet.com/privacy-policy.html",
+                                          ),
                                         ),
                                         mode: LaunchMode.externalApplication,
                                       );

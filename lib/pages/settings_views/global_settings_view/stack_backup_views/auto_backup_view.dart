@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app_config.dart';
+import '../../../../local_fourbc/edition_links.dart';
 import '../../../../providers/global/auto_swb_service_provider.dart';
 import '../../../../providers/providers.dart';
 import '../../../../themes/stack_colors.dart';
@@ -313,12 +314,15 @@ class _AutoBackupViewState extends ConsumerState<AutoBackupView> {
                                 "Auto Backup is a custom ${AppConfig.appName} feature that offers a convenient backup of your data.\n\nTo ensure maximum security, we recommend using a unique password that you haven't used anywhere else on the internet before. Your password is not stored.\n\nFor more information, please see our website ",
                           ),
                           TextSpan(
-                            text: "stackwallet.com.",
+                            // 4bc Wallet edition: "our website" is our own.
+                            text: fourbcLink("stackwallet.com."),
                             style: STextStyles.richLink(context),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 launchUrl(
-                                  Uri.parse("https://stackwallet.com"),
+                                  Uri.parse(
+                                    fourbcLink("https://stackwallet.com"),
+                                  ),
                                   mode: LaunchMode.externalApplication,
                                 );
                               },

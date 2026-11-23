@@ -17,6 +17,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_config.dart';
+import '../local_fourbc/edition_links.dart';
 import '../local_fourbc/edition_notice.dart';
 import '../local_fourbc/welcome_picture.dart';
 import '../local_fourbc/welcome_words.dart';
@@ -216,7 +217,9 @@ class PrivacyAndTOSText extends StatelessWidget {
                   ..onTap = () {
                     launchUrl(
                       Uri.parse(
-                        "https://stackwallet.com/terms-of-service.html",
+                        fourbcLink(
+                          "https://stackwallet.com/terms-of-service.html",
+                        ),
                       ),
                       mode: LaunchMode.externalApplication,
                     );
@@ -230,7 +233,11 @@ class PrivacyAndTOSText extends StatelessWidget {
                 TapGestureRecognizer()
                   ..onTap = () {
                     launchUrl(
-                      Uri.parse("https://stackwallet.com/privacy-policy.html"),
+                      Uri.parse(
+                        fourbcLink(
+                          "https://stackwallet.com/privacy-policy.html",
+                        ),
+                      ),
                       mode: LaunchMode.externalApplication,
                     );
                   },
