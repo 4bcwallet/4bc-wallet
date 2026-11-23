@@ -16,7 +16,7 @@ import '../widgets/rounded_white_container.dart';
 const kUpstreamRelease = "Stack Wallet v2.7.5 (build 325)";
 
 /// The day our changes to that release were last made.
-const kEditionChangedOn = "23 November 2026";
+const kEditionChangedOn = "24 November 2026";
 
 /// True only in the 4bc Wallet edition (see scripts/app_config/configure_fourbc_wallet.sh).
 bool get isFourbcEdition => AppConfig.prefix == "4bc";
