@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app_config.dart';
 import '../local_fourbc/edition_notice.dart';
+import '../local_fourbc/welcome_picture.dart';
 import '../local_fourbc/welcome_words.dart';
 import '../pages_desktop_specific/password/create_password_view.dart';
 import '../themes/stack_colors.dart';
@@ -51,8 +52,9 @@ class _IntroViewState extends ConsumerState<IntroView> {
   @override
   Widget build(BuildContext context) {
     debugPrint("BUILD: $runtimeType ");
-    final stack = ref.watch(
-      themeProvider.select((value) => value.assets.stack),
+    // 4bc Wallet edition: the welcome screen's own picture, when the theme has one.
+    final stack = fourbcWelcomePicture(
+      ref.watch(themeProvider.select((value) => value.assets.stack)),
     );
     return Background(
       child: Scaffold(

@@ -4,8 +4,10 @@
 // Walks the first screens of a freshly installed app in the iOS simulator and
 // saves a picture of each into the app's Documents folder, from where the
 // lead's script copies them. It creates NO wallet and shows NO recovery
-// phrase: it stops at the list of coins, then goes back and pictures the
-// settings screens (settings, about, manage nodes, security, currency).
+// phrase: from the list of coins it opens "Add ... wallet" of each coin (and
+// "Name your ... wallet" of the first, where it types nothing and never
+// presses "Next"), then goes back and pictures the settings screens
+// (settings, about, manage nodes, security, currency).
 //
 // The package name in the imports below is the configured app's (pubspec.yaml,
 // set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
@@ -167,6 +169,39 @@ void main() {
     if (testnet.evaluate().isNotEmpty) {
       await tester.ensureVisible(testnet.first);
       await _shot(tester, "add-wallet-testnet-coins");
+    }
+
+    // 5b. "Add ... wallet" of each coin: the screen that shows the coin's big
+    // picture. For the first coin also "Name your ... wallet", which shows the
+    // same picture small. No name is typed and "Next" is never pressed there,
+    // so no wallet is made and no recovery phrase is ever on the screen.
+    bool first = true;
+    for (final coin in ["Bitcoin", "Monero", "Bitcoin Frost"]) {
+      // A row of the list reads "Bitcoin (BTC)".
+      final entry = find.textContaining("$coin (");
+      if (entry.evaluate().isEmpty) continue;
+      await tester.ensureVisible(entry.first);
+      await _wait(tester, 3);
+      await tester.tap(entry.first, warnIfMissed: false);
+      await _wait(tester, 5);
+      await _tapText(tester, "Next");
+      if (!await _waitFor(tester, find.text("Add $coin wallet"), seconds: 15)) {
+        return;
+      }
+      final slug = coin.toLowerCase().replaceAll(" ", "-");
+      await _shot(tester, "add-$slug-wallet");
+      if (first) {
+        first = false;
+        await _tapText(tester, "Create new wallet");
+        if (await _waitFor(tester, find.textContaining("Name your"), seconds: 10)) {
+          await _shot(tester, "name-your-$slug-wallet");
+          await _back(tester);
+          await _wait(tester, 10);
+        }
+      }
+      await _back(tester);
+      await _wait(tester, 10);
+      if (!await _waitFor(tester, find.text("Coins"), seconds: 10)) return;
     }
 
     // 6. Back home, then the settings screens. Nothing is changed in them.
