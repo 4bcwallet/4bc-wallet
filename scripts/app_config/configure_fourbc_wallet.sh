@@ -12,8 +12,8 @@ set -x -e
 #   - the feature set is Tor only: theme selection is off because the app has one look
 #     (see local/fourbc_wallet/make_theme.py), and swap, buy and the two shops are off
 #     because they need partner agreements and keys this edition does not have;
-#   - our theme is packed, our few shared pictures are laid over Stack Duo's, and the
-#     launch screen's ground colour is set to our grey.
+#   - our theme is packed, our few shared pictures and our two animations are laid over
+#     Stack Duo's, and the launch screen's ground colour is set to our grey.
 #
 # NEVER change NEW_APP_ID or _appDataDirName once anyone holds coins in the app:
 # they decide whether an installed app keeps its wallets.
@@ -70,6 +70,19 @@ OUR_SVG_DIR="${APP_PROJECT_ROOT_DIR}/asset_sources/svg/fourbc_wallet"
 rm -rf "${OUR_SVG_DIR}"
 cp -R "${APP_PROJECT_ROOT_DIR}/asset_sources/svg/stack_duo" "${OUR_SVG_DIR}"
 cp -R "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/svg_overrides/." "${OUR_SVG_DIR}/"
+
+# Our animations: Stack Duo's folder with two files of our own laid over it
+# (local/fourbc_wallet/lottie/make_loader.py writes both; its header says what they are).
+# The folder is rebuilt on every configure and is not tracked by git.
+#   loader.json                the app's loading animation: our own, the "c" of our sign
+#   loader_and_checkmark.json  Stack Duo's, its two near-black circles in our silver
+OUR_LOTTIE_DIR="${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/fourbc_wallet"
+rm -rf "${OUR_LOTTIE_DIR}"
+cp -R "${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/stack_duo" "${OUR_LOTTIE_DIR}"
+python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/lottie/make_loader.py" ring "${OUR_LOTTIE_DIR}/loader.json"
+python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/lottie/make_loader.py" send-dialog \
+  "${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/stack_duo/loader_and_checkmark.json" \
+  "${OUR_LOTTIE_DIR}/loader_and_checkmark.json"
 
 # Pack our theme into asset_sources/default_themes/fourbc_wallet/light.zip.
 python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/make_theme.py"

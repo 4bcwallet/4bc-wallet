@@ -9,6 +9,11 @@
 // presses "Next"), then goes back and pictures the settings screens
 // (settings, about, manage nodes, currency, advanced, support).
 //
+// With --dart-define=TEST_WALLET=true it takes another road after the empty home
+// screen: it makes one throwaway wallet on Bitcoin's test network and pictures
+// the two screens only a wallet shows (see _testWalletScreens below). The
+// recovery phrase is never on the screen on that road either.
+//
 // The package name in the imports below is the configured app's (pubspec.yaml,
 // set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
 //
@@ -19,12 +24,20 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:fourbcwallet/main.dart' as app;
+import 'package:fourbcwallet/pages/wallets_view/sub_widgets/favorite_card.dart';
+import 'package:fourbcwallet/providers/global/secure_store_provider.dart';
+import 'package:fourbcwallet/providers/providers.dart';
+import 'package:fourbcwallet/wallets/crypto_currency/crypto_currency.dart';
+import 'package:fourbcwallet/wallets/isar/models/wallet_info.dart';
+import 'package:fourbcwallet/wallets/wallet/wallet.dart';
 import 'package:fourbcwallet/widgets/custom_buttons/app_bar_icon_button.dart';
 import 'package:fourbcwallet/widgets/custom_pin_put/pin_keyboard.dart';
 
@@ -95,6 +108,68 @@ Future<void> _back(WidgetTester tester) async {
   final back = find.byType(AppBarBackButton);
   expect(await _waitFor(tester, back, seconds: 10), isTrue, reason: "no back");
   await tester.tap(back.first, warnIfMissed: false);
+}
+
+// Makes one throwaway wallet on Bitcoin's test network (testnet4), so that the
+// screens only a wallet shows can be pictured: the home screen with a favourite
+// card, and the wallet's own screen with its balance card.
+//
+// The wallet is made by the app's own code, as "Create new wallet" makes it,
+// but without the screens that show and verify the recovery phrase: the phrase
+// is generated in memory, handed to the wallet, and never shown, read back,
+// printed or logged here. The wallet lives in the test app, which is removed
+// from the simulator when the test ends; it is empty and nothing is sent to it.
+//
+// On this road the test is reported as failed after its last picture: when the
+// test's app is taken down, the app's own code disposes two of its watchers a
+// second time ("A Watcher<WalletInfo> was used after being disposed"). The
+// pictures are taken before that and are whole.
+Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
+  final container = ProviderScope.containerOf(
+    tester.element(onHome.first),
+    listen: false,
+  );
+  final coin = Bitcoin(CryptoCurrencyNetwork.test4);
+  final prefs = container.read(prefsChangeNotifierProvider);
+  final nodes = container.read(nodeServiceChangeNotifierProvider);
+  final isar = container.read(mainDBProvider).isar;
+
+  prefs.showTestNetCoins = true;
+  if (nodes.getPrimaryNodeFor(currency: coin) == null) {
+    await nodes.save(coin.defaultNode(isPrimary: true), null, false);
+  }
+
+  final info = WalletInfo.createNew(coin: coin, name: "Test wallet");
+  final wallet = await Wallet.create(
+    walletInfo: info,
+    mainDB: container.read(mainDBProvider),
+    secureStorageInterface: container.read(secureStoreProvider),
+    nodeService: nodes,
+    prefs: prefs,
+    mnemonicPassphrase: "",
+    mnemonic: bip39.generateMnemonic(strength: 128),
+  );
+  await wallet.init();
+  await wallet.info.setMnemonicVerified(isar: isar);
+  container.read(pWallets).addWallet(wallet);
+  await wallet.info.updateIsFavourite(true, isar: isar);
+
+  expect(
+    await _waitFor(tester, find.byType(FavoriteCard), seconds: 30),
+    isTrue,
+    reason: "no favourite card on the home screen",
+  );
+  await _wait(tester, 20);
+  await _shot(tester, "home-test-wallet");
+
+  await tester.tap(find.byType(FavoriteCard).first, warnIfMissed: false);
+  expect(
+    await _waitFor(tester, find.text("Transactions"), seconds: 60),
+    isTrue,
+    reason: "the wallet's screen did not open",
+  );
+  await _wait(tester, 40);
+  await _shot(tester, "wallet-screen-test-wallet");
 }
 
 void main() {
@@ -184,6 +259,12 @@ void main() {
     final reachedHome = await _waitFor(tester, addWallet, seconds: 40);
     await _shot(tester, reachedHome ? "home-empty" : "after-pin");
     if (!reachedHome) return;
+
+    // 4b. The other road: a throwaway test-network wallet and its two screens.
+    if (const bool.fromEnvironment("TEST_WALLET")) {
+      await _testWalletScreens(tester, addWallet);
+      return;
+    }
 
     // 5. The list of coins this edition offers. The walk ends here.
     await _tapText(tester, "Add Wallet");

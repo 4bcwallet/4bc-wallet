@@ -8,7 +8,7 @@ A wallet for Bitcoin and Monero on iPhone. Your keys stay on your phone.
 
 ## What is different from Stack Wallet
 
-- **The name and the look:** our own name, icon, launch picture, colours, drawn pictures and welcome words.
+- **The name and the look:** our own name, icon, launch picture, colours, drawn pictures, loading animation and welcome words.
 - **Fewer features:** Bitcoin, Monero and Bitcoin Frost only. Swapping, buying, the in-app shops and theme downloads are switched off.
 - **Our own links:** the app names `4bcwallet.com` and its own terms and privacy pages instead of Stack Wallet's, and its Support screen shows our own address and this repository instead of Cypher Stack's channels.
 - **Nothing else.** No line of the code that handles keys, signing, storage or the network is changed. The default nodes are the ones Stack Wallet ships with.
@@ -24,10 +24,10 @@ git diff build_325..main --stat
 Our own files:
 
 - `scripts/app_config/configure_fourbc_wallet.sh`: the edition's configuration (derived from Stack Duo's; its header lists every difference)
-- `local/fourbc_wallet/`: the theme's sources and the script that packs it
+- `local/fourbc_wallet/`: the theme's sources and the script that packs it; the script that writes our loading animation
 - `lib/local_fourbc/`: the edition notice of the About screen, our links, words and contact
 - `asset_sources/*/fourbc_wallet/`: icon, launch picture, logo
-- `integration_test/local_screenshots/`: a test that walks the first screens and saves pictures
+- `integration_test/local_screenshots/`: a test that walks the first screens and saves pictures (it can also make a throwaway test-network wallet, to picture a wallet's screens), and one that shows an animation file with the app's own player
 
 Upstream files edited, each by a few lines: `scripts/build_app.sh`, and under `lib/pages/`: `intro_view.dart`, `home_view/home_view.dart`, `address_book_views/address_book_view.dart`, `settings_views/global_settings_view/about_view.dart`, `settings_views/global_settings_view/support_view.dart`, `settings_views/global_settings_view/stack_backup_views/auto_backup_view.dart`.
 
