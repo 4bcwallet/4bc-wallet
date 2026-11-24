@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../local_fourbc/card_pictures.dart';
 import '../themes/coin_card_provider.dart';
 import '../themes/theme_providers.dart';
 import '../utilities/assets.dart';
@@ -37,9 +38,15 @@ class CoinCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final coin = ref.watch(pWalletCoin(walletId));
 
-    final bool hasCardImageBg = (isFavorite)
+    final fourbcPicture = fourbcCardPicture(
+      ref,
+      walletId,
+      coin,
+      isFavorite: isFavorite,
+    );
+    final bool hasCardImageBg = fourbcPicture != null || ((isFavorite)
         ? ref.watch(coinCardFavoritesProvider(coin)) != null
-        : ref.watch(coinCardProvider(coin)) != null;
+        : ref.watch(coinCardProvider(coin)) != null);
 
     return Stack(
       children: [
@@ -55,9 +62,10 @@ class CoinCard extends ConsumerWidget {
                 fit: BoxFit.cover,
                 image: FileImage(
                   File(
-                    (isFavorite)
+                    fourbcPicture ??
+                    ((isFavorite)
                         ? ref.watch(coinCardFavoritesProvider(coin))!
-                        : ref.watch(coinCardProvider(coin))!,
+                        : ref.watch(coinCardProvider(coin))!),
                   ),
                 ),
               ),

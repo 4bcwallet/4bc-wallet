@@ -10,8 +10,8 @@
 // (settings, about, manage nodes, currency, advanced, support).
 //
 // With --dart-define=TEST_WALLET=true it takes another road after the empty home
-// screen: it makes one throwaway wallet on Bitcoin's test network and pictures
-// the two screens only a wallet shows (see _testWalletScreens below). The
+// screen: it makes throwaway wallets on Bitcoin's test network and pictures
+// the screens only a wallet shows (see _testWalletScreens below). The
 // recovery phrase is never on the screen on that road either.
 //
 // The package name in the imports below is the configured app's (pubspec.yaml,
@@ -32,6 +32,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:fourbcwallet/main.dart' as app;
+import 'package:fourbcwallet/pages/wallet_view/wallet_view.dart';
 import 'package:fourbcwallet/pages/wallets_view/sub_widgets/favorite_card.dart';
 import 'package:fourbcwallet/providers/global/secure_store_provider.dart';
 import 'package:fourbcwallet/providers/providers.dart';
@@ -110,21 +111,28 @@ Future<void> _back(WidgetTester tester) async {
   await tester.tap(back.first, warnIfMissed: false);
 }
 
-// Makes one throwaway wallet on Bitcoin's test network (testnet4), so that the
-// screens only a wallet shows can be pictured: the home screen with a favourite
-// card, and the wallet's own screen with its balance card.
+// Makes throwaway wallets on Bitcoin's test network (testnet4), so that the
+// screens only a wallet shows can be pictured: the home screen with its
+// favourite cards, and each wallet's own screen with its balance card. One
+// wallet is made, or as many as --dart-define=TEST_WALLETS=<number> says (up
+// to five): this edition gives each wallet of a coin its own card picture.
 //
-// The wallet is made by the app's own code, as "Create new wallet" makes it,
+// A wallet is made by the app's own code, as "Create new wallet" makes it,
 // but without the screens that show and verify the recovery phrase: the phrase
 // is generated in memory, handed to the wallet, and never shown, read back,
-// printed or logged here. The wallet lives in the test app, which is removed
-// from the simulator when the test ends; it is empty and nothing is sent to it.
+// printed or logged here. The wallets live in the test app, which is removed
+// from the simulator when the test ends; they are empty and nothing is sent
+// to them.
 //
 // On this road the test is reported as failed after its last picture: when the
 // test's app is taken down, the app's own code disposes two of its watchers a
 // second time ("A Watcher<WalletInfo> was used after being disposed"). The
 // pictures are taken before that and are whole.
 Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
+  const names = ["Spending", "Savings", "Holding", "Travel", "Gifts"];
+  const asked = int.fromEnvironment("TEST_WALLETS", defaultValue: 1);
+  final count = asked.clamp(1, names.length);
+
   final container = ProviderScope.containerOf(
     tester.element(onHome.first),
     listen: false,
@@ -139,21 +147,30 @@ Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
     await nodes.save(coin.defaultNode(isPrimary: true), null, false);
   }
 
-  final info = WalletInfo.createNew(coin: coin, name: "Test wallet");
-  final wallet = await Wallet.create(
-    walletInfo: info,
-    mainDB: container.read(mainDBProvider),
-    secureStorageInterface: container.read(secureStoreProvider),
-    nodeService: nodes,
-    prefs: prefs,
-    mnemonicPassphrase: "",
-    mnemonic: bip39.generateMnemonic(strength: 128),
-  );
-  await wallet.init();
-  await wallet.info.setMnemonicVerified(isar: isar);
-  container.read(pWallets).addWallet(wallet);
-  await wallet.info.updateIsFavourite(true, isar: isar);
+  final ids = <String>[];
+  for (int i = 0; i < count; i++) {
+    final info = WalletInfo.createNew(
+      coin: coin,
+      name: count == 1 ? "Test wallet" : names[i],
+    );
+    final wallet = await Wallet.create(
+      walletInfo: info,
+      mainDB: container.read(mainDBProvider),
+      secureStorageInterface: container.read(secureStoreProvider),
+      nodeService: nodes,
+      prefs: prefs,
+      mnemonicPassphrase: "",
+      mnemonic: bip39.generateMnemonic(strength: 128),
+    );
+    await wallet.init();
+    await wallet.info.setMnemonicVerified(isar: isar);
+    container.read(pWallets).addWallet(wallet);
+    await wallet.info.updateIsFavourite(true, isar: isar);
+    ids.add(info.walletId);
+  }
 
+  // The home screen: the favourite cards lie side by side; each is brought to
+  // the front in turn.
   expect(
     await _waitFor(tester, find.byType(FavoriteCard), seconds: 30),
     isTrue,
@@ -161,15 +178,32 @@ Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
   );
   await _wait(tester, 20);
   await _shot(tester, "home-test-wallet");
+  final row = tester.getCenter(find.byType(FavoriteCard).first).dy;
+  for (int i = 1; i < count; i++) {
+    // One card's width to the left, from the middle of the row of cards.
+    await tester.dragFrom(Offset(260, row), const Offset(-225, 0));
+    await _wait(tester, 10);
+    await _shot(tester, "home-test-wallet-card-${i + 1}");
+  }
 
-  await tester.tap(find.byType(FavoriteCard).first, warnIfMissed: false);
-  expect(
-    await _waitFor(tester, find.text("Transactions"), seconds: 60),
-    isTrue,
-    reason: "the wallet's screen did not open",
-  );
-  await _wait(tester, 40);
-  await _shot(tester, "wallet-screen-test-wallet");
+  // Each wallet's own screen, opened as a tap on its card opens it.
+  final navigator = Navigator.of(tester.element(find.byType(FavoriteCard).first));
+  for (int i = 0; i < count; i++) {
+    unawaited(navigator.pushNamed(WalletView.routeName, arguments: ids[i]));
+    expect(
+      await _waitFor(tester, find.text("Transactions"), seconds: 60),
+      isTrue,
+      reason: "the wallet's screen did not open",
+    );
+    await _wait(tester, 30);
+    await _shot(
+      tester,
+      count == 1 ? "wallet-screen-test-wallet" : "wallet-screen-${i + 1}",
+    );
+    await _back(tester);
+    await _waitFor(tester, find.byType(FavoriteCard), seconds: 20);
+    await _wait(tester, 10);
+  }
 }
 
 void main() {
