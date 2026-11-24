@@ -13,6 +13,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app_config.dart';
+import '../../../local_fourbc/support_contacts.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
@@ -59,7 +60,8 @@ class SupportView extends StatelessWidget {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        // 4bc Wallet edition: our own contact and none of the ones below.
+        children: fourbcSupportEntries(isDesktop: isDesktop) ?? [
           RoundedWhiteContainer(
             child: Text(
               "If you need support or want to report a bug, reach out to us on any of our socials!",

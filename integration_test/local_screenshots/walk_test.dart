@@ -7,7 +7,7 @@
 // phrase: from the list of coins it opens "Add ... wallet" of each coin (and
 // "Name your ... wallet" of the first, where it types nothing and never
 // presses "Next"), then goes back and pictures the settings screens
-// (settings, about, manage nodes, security, currency).
+// (settings, about, manage nodes, currency, advanced, support).
 //
 // The package name in the imports below is the configured app's (pubspec.yaml,
 // set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
@@ -236,7 +236,13 @@ void main() {
     await tester.tap(settings.first, warnIfMissed: false);
     if (!await _waitFor(tester, find.text("About"), seconds: 10)) return;
     await _shot(tester, "settings");
-    for (final title in ["About", "Manage nodes", "Currency", "Advanced"]) {
+    for (final title in [
+      "About",
+      "Manage nodes",
+      "Currency",
+      "Advanced",
+      "Support",
+    ]) {
       final item = find.text(title);
       if (item.evaluate().isEmpty) continue;
       await tester.ensureVisible(item.first);
