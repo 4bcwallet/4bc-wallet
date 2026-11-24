@@ -114,6 +114,30 @@ void main() {
     }
     _outDir.createSync(recursive: true);
 
+    // Optional: draw the app at another screen's size, for pictures of how
+    // it lays out there (for example a folding phone's outer screen), with
+    //   --dart-define=VIEW_W=1398 --dart-define=VIEW_H=2034
+    //   --dart-define=VIEW_RATIO=3 --dart-define=VIEW_TOP=54 --dart-define=VIEW_BOTTOM=34
+    // W and H are physical pixels, RATIO the pixels per point, TOP and BOTTOM
+    // the safe-area insets in points. This is the app's own drawing at that
+    // size on the simulated phone at hand, not a run on that other device.
+    const viewW = int.fromEnvironment("VIEW_W");
+    const viewH = int.fromEnvironment("VIEW_H");
+    if (viewW > 0 && viewH > 0) {
+      const ratio = int.fromEnvironment("VIEW_RATIO", defaultValue: 3);
+      const top = int.fromEnvironment("VIEW_TOP");
+      const bottom = int.fromEnvironment("VIEW_BOTTOM");
+      tester.view.devicePixelRatio = ratio.toDouble();
+      tester.view.physicalSize = Size(viewW.toDouble(), viewH.toDouble());
+      final insets = FakeViewPadding(
+        top: top.toDouble() * ratio,
+        bottom: bottom.toDouble() * ratio,
+      );
+      tester.view.padding = insets;
+      tester.view.viewPadding = insets;
+      addTearDown(tester.view.reset);
+    }
+
     final errors = <Object>[];
     runZonedGuarded(() => app.main(const []), (e, s) => errors.add(e));
 
