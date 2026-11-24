@@ -10,6 +10,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../local_fourbc/delete_account_words.dart';
 import '../../../db/hive/db.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/text_styles.dart';
@@ -111,7 +112,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
           children: [
             RoundedWhiteContainer(
               child: Text(
-                "There is no account to delete, but Apple requires that we have a way to 'delete accounts' in the app and will reject our app updates if we don't, so here it is. Clicking this will delete all app data (not from our servers, because we never had it in the first place).\n\nWhen you click confirm, all app data will be deleted, including wallets and preferences, and you will be taken back to the very first onboarding screen. BE SURE TO BACKUP ALL SEEDS!!\n\nAre you sure you want to delete your \"account\"?",
+                fourbcDeleteAccountWords("There is no account to delete, but Apple requires that we have a way to 'delete accounts' in the app and will reject our app updates if we don't, so here it is. Clicking this will delete all app data (not from our servers, because we never had it in the first place).\n\nWhen you click confirm, all app data will be deleted, including wallets and preferences, and you will be taken back to the very first onboarding screen. BE SURE TO BACKUP ALL SEEDS!!\n\nAre you sure you want to delete your \"account\"?"),
                 style: STextStyles.smallMed12(context),
               ),
             ),

@@ -21,6 +21,12 @@
 # gives its two near-black turning circles our silver, because near-black
 # cannot be seen on this edition's dark dialog. Nothing else in it changes.
 #
+# A fourth word makes no animation of ours either: it copies upstream's
+# animation of the Tor settings screen (an onion with a plug, in purple and
+# mint) and gives each of its plain colours one of this edition's: the onion
+# silver, its lines near-black, the lights our yellow, the white floor a dark
+# shadow. The drawing, the motion and the red of "failed" stay upstream's.
+#
 # Only what the app's Lottie player draws for certain is used: paths, round
 # strokes, trim paths, rotation and opacity. A glow is a set of wider, very
 # faint strokes under the light, not a blur.
@@ -29,7 +35,8 @@
 #   python3 local/fourbc_wallet/lottie/make_loader.py ring <out.json>
 #   python3 local/fourbc_wallet/lottie/make_loader.py sign <out.json>
 #   python3 local/fourbc_wallet/lottie/make_loader.py send-dialog <upstream's loader_and_checkmark.json> <out.json>
-# The configure script (scripts/app_config/configure_fourbc_wallet.sh) runs the first and the third.
+#   python3 local/fourbc_wallet/lottie/make_loader.py tor-onion <upstream's onion_animation.json> <out.json>
+# The configure script (scripts/app_config/configure_fourbc_wallet.sh) runs the first, the third and the fourth.
 
 import json
 import math
@@ -241,14 +248,61 @@ def send_dialog(source):
     return doc
 
 
+# Upstream's colours in the Tor onion, and ours in their place.
+ONION_COLOURS = {
+    "#4B4A8F": "#1F2023",  # outlines and eyes: dark purple to near-black
+    "#927AD6": "#D9DADC",  # the onion, its hands and legs: purple to silver
+    "#8CE6CD": "#F4F4F5",  # the three feathers and a globe: mint to pale silver
+    "#C4C4C4": "#9DA0A6",  # plug and socket: grey to a grey of our ramp
+    "#EBEBEB": "#222327",  # the floor: a white plate to a dark shadow
+    "#F6E6A8": "#FFE39A",  # plug and socket: pale yellow to a tint of ours
+    "#FFE06A": "#FFC93C",  # the lights: yellow to our yellow
+    "#FF8383": "#FF8383",  # "failed": red keeps its meaning
+}
+
+
+def tor_onion(source):
+    with open(source) as f:
+        doc = json.load(f)
+    seen = set()
+
+    def walk(node):
+        if isinstance(node, dict):
+            colour = node.get("c", {}).get("k") if node.get("ty") in ("fl", "st") else None
+            if isinstance(colour, list) and colour:
+                if isinstance(colour[0], dict):
+                    sys.exit(f"make_loader: a colour that changes in time in {source}: upstream's animation has changed, look at it")
+                name = "#%02X%02X%02X" % tuple(round(v * 255) for v in colour[:3])
+                if name not in ONION_COLOURS:
+                    sys.exit(f"make_loader: colour {name} in {source} has no colour of ours: upstream's animation has changed, look at it")
+                ours = ONION_COLOURS[name]
+                node["c"]["k"] = [int(ours[i:i + 2], 16) / 255 for i in (1, 3, 5)] + list(colour[3:])
+                seen.add(name)
+            if node.get("ty") in ("gf", "gs"):
+                sys.exit(f"make_loader: a gradient in {source}: upstream's animation has changed, look at it")
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(doc)
+    missing = sorted(set(ONION_COLOURS) - seen)
+    if missing:
+        sys.exit(f"make_loader: {', '.join(missing)} not found in {source}: upstream's animation has changed, look at it")
+    return doc
+
+
 def main():
     args = sys.argv[1:]
     if len(args) == 2 and args[0] in ("ring", "sign"):
         doc = ring() if args[0] == "ring" else sign()
     elif len(args) == 3 and args[0] == "send-dialog":
         doc = send_dialog(args[1])
+    elif len(args) == 3 and args[0] == "tor-onion":
+        doc = tor_onion(args[1])
     else:
-        sys.exit("usage: make_loader.py ring|sign <out.json>  |  make_loader.py send-dialog <upstream.json> <out.json>")
+        sys.exit("usage: make_loader.py ring|sign <out.json>  |  make_loader.py send-dialog|tor-onion <upstream.json> <out.json>")
     with open(args[-1], "w") as f:
         json.dump(doc, f, separators=(",", ":"))
         f.write("\n")

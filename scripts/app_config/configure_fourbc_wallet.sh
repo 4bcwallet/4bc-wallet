@@ -71,11 +71,12 @@ rm -rf "${OUR_SVG_DIR}"
 cp -R "${APP_PROJECT_ROOT_DIR}/asset_sources/svg/stack_duo" "${OUR_SVG_DIR}"
 cp -R "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/svg_overrides/." "${OUR_SVG_DIR}/"
 
-# Our animations: Stack Duo's folder with two files of our own laid over it
-# (local/fourbc_wallet/lottie/make_loader.py writes both; its header says what they are).
+# Our animations: Stack Duo's folder with three files of our own laid over it
+# (local/fourbc_wallet/lottie/make_loader.py writes them; its header says what they are).
 # The folder is rebuilt on every configure and is not tracked by git.
 #   loader.json                the app's loading animation: our own, the "c" of our sign
 #   loader_and_checkmark.json  Stack Duo's, its two near-black circles in our silver
+#   onion_animation.json       Stack Duo's Tor onion, its plain colours changed to ours
 OUR_LOTTIE_DIR="${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/fourbc_wallet"
 rm -rf "${OUR_LOTTIE_DIR}"
 cp -R "${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/stack_duo" "${OUR_LOTTIE_DIR}"
@@ -83,6 +84,9 @@ python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/lottie/make_loader.py" ring
 python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/lottie/make_loader.py" send-dialog \
   "${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/stack_duo/loader_and_checkmark.json" \
   "${OUR_LOTTIE_DIR}/loader_and_checkmark.json"
+python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/lottie/make_loader.py" tor-onion \
+  "${APP_PROJECT_ROOT_DIR}/asset_sources/lottie/stack_duo/onion_animation.json" \
+  "${OUR_LOTTIE_DIR}/onion_animation.json"
 
 # Pack our theme into asset_sources/default_themes/fourbc_wallet/light.zip.
 python3 "${APP_PROJECT_ROOT_DIR}/local/fourbc_wallet/make_theme.py"
