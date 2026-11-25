@@ -36,7 +36,9 @@
 #   python3 local/fourbc_wallet/lottie/make_loader.py sign <out.json>
 #   python3 local/fourbc_wallet/lottie/make_loader.py send-dialog <upstream's loader_and_checkmark.json> <out.json>
 #   python3 local/fourbc_wallet/lottie/make_loader.py tor-onion <upstream's onion_animation.json> <out.json>
-# The configure script (scripts/app_config/configure_fourbc_wallet.sh) runs the first, the third and the fourth.
+# The configure script (scripts/app_config/configure_fourbc_wallet.sh) runs the first and the third. Until
+# 25 Nov 2026 it ran the fourth too; since then the Tor settings screen has an animation of our own
+# (make_lantern.py beside this file), and the fourth word is kept for whoever wants the recoloured onion back.
 
 import json
 import math
