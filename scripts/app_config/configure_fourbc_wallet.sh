@@ -66,7 +66,8 @@ fi
 # arrow-down-left.svg and arrow-up-right.svg ("Receive" and "Send" in the bottom bar; the second is
 # also the sign of the Settings row "Startup"), tor.svg (the Tor status: the lantern of our Tor
 # settings animation) and signal-stream.svg, signal-sync-alt.svg, signal-problem-alt.svg (the sync
-# status: the ring of our sign, whole, open, and open round a mark). A file there whose
+# status: the ring of our sign, whole, open, and open round a mark); and network-wired.svg, the sign of
+# a node's own row, the same whole ring (green when connected). A file there whose
 # name begins with "fourbc-" replaces nothing: it is a small sign of our own
 # (fourbc-code.svg, for the Support screen's "Source code" entry).
 if [ -z "${APP_PROJECT_ROOT_DIR}" ]; then

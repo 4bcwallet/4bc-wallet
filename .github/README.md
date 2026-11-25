@@ -53,7 +53,7 @@ git diff build_325..main --stat
 Our own files:
 
 - `scripts/app_config/configure_fourbc_wallet.sh`: the edition's configuration (derived from Stack Duo's; its header lists every difference)
-- `local/fourbc_wallet/`: the theme's sources and the script that packs it; ten small shared signs of our own drawing; the scripts that write our loading animation and our animation for the Tor settings screen
+- `local/fourbc_wallet/`: the theme's sources and the script that packs it; eleven small shared signs of our own drawing; the scripts that write our loading animation and our animation for the Tor settings screen
 - `lib/local_fourbc/`: the edition notice of the About screen, our links, words and contact, the choice of a wallet's card picture, and the figure of the "Churn" progress screen
 - `asset_sources/*/fourbc_wallet/`: icon, launch picture, logo
 - `integration_test/local_screenshots/`: a test that walks the first screens and saves pictures (it can also make a throwaway test-network wallet, to picture a wallet's screens, and go on through every screen that can be reached without coins), two that show an animation file with the app's own player (one of them as the Tor settings screen plays it), and one that shows the "Churn" figure by itself
