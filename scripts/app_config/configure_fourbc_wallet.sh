@@ -58,8 +58,10 @@ fi
 
 # Our shared pictures: Stack Duo's folder with our few replacements laid over it
 # (local/fourbc_wallet/svg_overrides/, same file names). The folder is rebuilt on every
-# configure and is not tracked by git. Today's one replacement: plus.svg, drawn dark,
-# because the "Add Wallet" button shows it uncoloured on our yellow. A file there whose
+# configure and is not tracked by git. The replacements: plus.svg, drawn dark, because the
+# "Add Wallet" button shows it uncoloured on our yellow; circle-question.svg, drawn silver,
+# because the Tor settings screen shows it uncoloured on our dark ground; bell.svg, our
+# own drawing of the bell (the app gives it its colour wherever it is shown). A file there whose
 # name begins with "fourbc-" replaces nothing: it is a small sign of our own
 # (fourbc-code.svg, for the Support screen's "Source code" entry).
 if [ -z "${APP_PROJECT_ROOT_DIR}" ]; then

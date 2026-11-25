@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../local_fourbc/churn_figure.dart';
 import '../utilities/assets.dart';
 
 class MoneroChanDance extends StatelessWidget {
@@ -8,7 +9,7 @@ class MoneroChanDance extends StatelessWidget {
   final double height;
   @override
   Widget build(BuildContext context) {
-    return Image(
+    return fourbcChurnFigure(height) ?? Image(
       height: height,
       image: AssetImage(
         Assets.gif.moneroChanDance,

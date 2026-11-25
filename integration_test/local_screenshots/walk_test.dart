@@ -21,6 +21,14 @@
 // key, and never presses a button that sends, signs, deletes, creates or
 // restores anything (the comments in _sweepScreens say which ones it leaves).
 //
+// With --dart-define=SWEEP_ONLY=tor,delete-account as well, the third road
+// walks only the steps named (a step's name is the one written in its _step
+// line, with a hyphen for each space; "settings" is the list of settings
+// itself, "pause-and-resume" and "lock-screen" are the two at the end), and
+// the pictures of the cards and of each wallet's own screen are left out.
+// One changed screen then takes a minute and a half, not the whole road. A
+// name that fits no step is said in the log: "SWEEP_ONLY names no step".
+//
 // The package name in the imports below is the configured app's (pubspec.yaml,
 // set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
 //
@@ -59,6 +67,20 @@ import 'package:fourbcwallet/widgets/node_card.dart';
 
 late Directory _outDir;
 int _counter = 0;
+
+// The steps of the third road that were asked for by name; empty: all of them.
+final Set<String> _only = const String.fromEnvironment("SWEEP_ONLY")
+    .split(",")
+    .map((s) => s.trim().toLowerCase().replaceAll(" ", "-"))
+    .where((s) => s.isNotEmpty)
+    .toSet();
+final Set<String> _stepNames = {};
+
+bool _wanted(String what) {
+  final name = what.replaceAll(" ", "-");
+  _stepNames.add(name);
+  return _only.isEmpty || _only.contains(name);
+}
 
 Future<void> _wait(WidgetTester tester, [int tenths = 20]) async {
   for (int i = 0; i < tenths; i++) {
@@ -194,7 +216,7 @@ Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
   await _wait(tester, 20);
   await _shot(tester, "home-test-wallet");
   final row = tester.getCenter(find.byType(FavoriteCard).first).dy;
-  for (int i = 1; i < count; i++) {
+  for (int i = 1; i < count && _only.isEmpty; i++) {
     // One card's width to the left, from the middle of the row of cards.
     await tester.dragFrom(Offset(260, row), const Offset(-225, 0));
     await _wait(tester, 10);
@@ -203,7 +225,7 @@ Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
 
   // Each wallet's own screen, opened as a tap on its card opens it.
   final navigator = Navigator.of(tester.element(find.byType(FavoriteCard).first));
-  for (int i = 0; i < count; i++) {
+  for (int i = 0; i < count && _only.isEmpty; i++) {
     unawaited(navigator.pushNamed(WalletView.routeName, arguments: ids[i]));
     expect(
       await _waitFor(tester, find.text("Transactions"), seconds: 60),
@@ -252,6 +274,7 @@ Future<void> _step(
   String returnTo,
   Future<void> Function() body,
 ) async {
+  if (!_wanted(what)) return;
   try {
     await body();
   } catch (e) {
@@ -346,10 +369,12 @@ Future<void> _sweepScreens(
     await _rowShot(tester, "Sign/Verify", "wallet-sign-verify");
   });
   // Close the sheet again: a tap on the dark cover above it.
-  await _step(tester, navigator, "close more menu", wallet, () async {
-    await tester.tapAt(const Offset(200, 500));
-    await _wait(tester, 10);
-  });
+  if (_wanted("more menu")) {
+    await _step(tester, navigator, "more menu", wallet, () async {
+      await tester.tapAt(const Offset(200, 500));
+      await _wait(tester, 10);
+    });
+  }
 
   // Receive: the screen, the "Address type" choice opened, the three-dots
   // menu and the address list behind it, and "Advanced options". "Generate new
@@ -505,7 +530,7 @@ Future<void> _sweepScreens(
   // ---- Settings ----
   await _tapKey(tester, "walletsViewSettingsButton");
   expect(await _waitFor(tester, find.text("About"), seconds: 10), isTrue);
-  await _shot(tester, "settings-all-rows");
+  if (_wanted("settings")) await _shot(tester, "settings-all-rows");
 
   // The address book, the "My vault" entry and its detail, "add contact".
   await _step(tester, navigator, "address book", settings, () async {
@@ -651,25 +676,34 @@ Future<void> _sweepScreens(
   await _popTo(tester, navigator, home);
   // Both are sent at once: while the app is "paused" the test binding draws
   // no frames, so a pause with a wait inside it never comes back.
-  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-  await _wait(tester, 10);
-  await _shot(tester, "home-after-pause-and-resume");
-  container.read(prefsChangeNotifierProvider).autoLockInfo = (
-    enabled: true,
-    minutes: 1,
-  );
-  final locked = await _waitFor(
-    tester,
-    find.byType(LockscreenView),
-    seconds: 100,
-  );
-  if (locked) {
+  if (_wanted("pause and resume")) {
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await _wait(tester, 10);
-    await _shot(tester, "lock-screen-after-idle");
-  } else {
+    await _shot(tester, "home-after-pause-and-resume");
+  }
+  if (_wanted("lock screen")) {
+    container.read(prefsChangeNotifierProvider).autoLockInfo = (
+      enabled: true,
+      minutes: 1,
+    );
+    final locked = await _waitFor(
+      tester,
+      find.byType(LockscreenView),
+      seconds: 100,
+    );
+    if (locked) {
+      await _wait(tester, 10);
+      await _shot(tester, "lock-screen-after-idle");
+    } else {
+      // ignore: avoid_print
+      print("SWEEP lock screen did not appear within 100 seconds");
+    }
+  }
+  final unknown = _only.difference(_stepNames);
+  if (unknown.isNotEmpty) {
     // ignore: avoid_print
-    print("SWEEP lock screen did not appear within 100 seconds");
+    print("SWEEP_ONLY names no step: ${unknown.join(", ")}. The steps: ${_stepNames.join(", ")}");
   }
 }
 
