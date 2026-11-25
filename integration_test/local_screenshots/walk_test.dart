@@ -32,6 +32,12 @@
 // The package name in the imports below is the configured app's (pubspec.yaml,
 // set by scripts/app_config/configure_<app>.sh): "fourbcwallet" for 4bc Wallet.
 //
+// With --dart-define=FIAT_LINE=true the test wallets' cards carry the line
+// with the amount's worth under the amount ("0.00 USD" for test coins), as
+// they do for a user who chose "Easy Crypto": the amount then stands higher
+// on a card. For it the walk switches on the app's own setting that allows
+// the price to be asked for, and has the app ask for it once.
+//
 // Run:
 //   flutter test integration_test/local_screenshots/walk_test.dart -d <simulator id>
 
@@ -47,6 +53,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:fourbcwallet/main.dart' as app;
+import 'package:fourbcwallet/networking/http.dart';
 import 'package:fourbcwallet/pages/home_view/home_view.dart';
 import 'package:fourbcwallet/pages/manage_favorites_view/manage_favorites_view.dart';
 import 'package:fourbcwallet/pages/pinpad_views/lock_screen_view.dart';
@@ -58,6 +65,7 @@ import 'package:fourbcwallet/pages/wallets_view/wallets_overview.dart';
 import 'package:fourbcwallet/pages/wallets_view/sub_widgets/favorite_card.dart';
 import 'package:fourbcwallet/providers/global/secure_store_provider.dart';
 import 'package:fourbcwallet/providers/providers.dart';
+import 'package:fourbcwallet/services/price.dart';
 import 'package:fourbcwallet/wallets/crypto_currency/crypto_currency.dart';
 import 'package:fourbcwallet/wallets/isar/models/wallet_info.dart';
 import 'package:fourbcwallet/wallets/wallet/wallet.dart';
@@ -180,6 +188,20 @@ Future<void> _testWalletScreens(WidgetTester tester, Finder onHome) async {
   final isar = container.read(mainDBProvider).isar;
 
   prefs.showTestNetCoins = true;
+  if (const bool.fromEnvironment("FIAT_LINE")) {
+    // The line shows once the app knows a price: its own price service is
+    // asked to fetch now (it asks the price server, as the app does by itself
+    // for a user who chose "Easy Crypto"). The app asks at most once a minute
+    // and has asked at its start, when the setting was still off: this asking
+    // is let out.
+    prefs.externalCalls = true;
+    // The setting counts only once the app has stored it.
+    for (int i = 0; i < 50 && !prefs.externalCalls; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    PriceAPI(HTTP()).resetLastCalledToForceNextCallToUpdateCache();
+    await container.read(priceAnd24hChangeNotifierProvider).updatePrice();
+  }
   if (nodes.getPrimaryNodeFor(currency: coin) == null) {
     await nodes.save(coin.defaultNode(isPrimary: true), null, false);
   }
