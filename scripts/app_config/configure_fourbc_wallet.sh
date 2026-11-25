@@ -61,7 +61,12 @@ fi
 # configure and is not tracked by git. The replacements: plus.svg, drawn dark, because the
 # "Add Wallet" button shows it uncoloured on our yellow; circle-question.svg, drawn silver,
 # because the Tor settings screen shows it uncoloured on our dark ground; bell.svg, our
-# own drawing of the bell (the app gives it its colour wherever it is shown). A file there whose
+# own drawing of the bell (the app gives it its colour wherever it is shown); and the six signs of a
+# wallet's own screen, each our own drawing in one colour, which the app replaces by the state's:
+# arrow-down-left.svg and arrow-up-right.svg ("Receive" and "Send" in the bottom bar; the second is
+# also the sign of the Settings row "Startup"), tor.svg (the Tor status: the lantern of our Tor
+# settings animation) and signal-stream.svg, signal-sync-alt.svg, signal-problem-alt.svg (the sync
+# status: the ring of our sign, whole, open, and open round a mark). A file there whose
 # name begins with "fourbc-" replaces nothing: it is a small sign of our own
 # (fourbc-code.svg, for the Support screen's "Source code" entry).
 if [ -z "${APP_PROJECT_ROOT_DIR}" ]; then

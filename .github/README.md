@@ -39,7 +39,7 @@ GNU General Public License, version 3: see `LICENSE`. You may use, study, change
 
 What is different from Stack Wallet:
 
-- **The name and the look:** our own name, icon, launch picture, colours, drawn pictures, small signs, loading animation, Tor settings animation and welcome words. Each wallet's card carries a small drawing, and the wallets of one coin get different ones, so that two of them are told apart at a glance. The progress screen of a Monero wallet's "Churn" shows a figure of our own, moved by a few lines of code, in place of the animated picture.
+- **The name and the look:** our own name, icon, launch picture, colours, drawn pictures, small signs (those of a wallet's top and bottom bar among them), loading animation, Tor settings animation and welcome words. Each wallet's card carries a small drawing, and the wallets of one coin get different ones, so that two of them are told apart at a glance. The progress screen of a Monero wallet's "Churn" shows a figure of our own, moved by a few lines of code, in place of the animated picture.
 - **Fewer features:** Bitcoin, Monero and Bitcoin Frost only. Swapping, buying, the in-app shops and theme downloads are switched off.
 - **Our own links:** the app names `4bcwallet.com` and its own terms and privacy pages instead of Stack Wallet's, and its Support screen shows our own address and this repository instead of Cypher Stack's channels. Settings, "Delete account" says in our own words what the button does.
 - **Nothing else.** No line of the code that handles keys, signing, storage or the network is changed. The default nodes are the ones Stack Wallet ships with.
@@ -53,7 +53,7 @@ git diff build_325..main --stat
 Our own files:
 
 - `scripts/app_config/configure_fourbc_wallet.sh`: the edition's configuration (derived from Stack Duo's; its header lists every difference)
-- `local/fourbc_wallet/`: the theme's sources and the script that packs it; the scripts that write our loading animation and our animation for the Tor settings screen
+- `local/fourbc_wallet/`: the theme's sources and the script that packs it; ten small shared signs of our own drawing; the scripts that write our loading animation and our animation for the Tor settings screen
 - `lib/local_fourbc/`: the edition notice of the About screen, our links, words and contact, the choice of a wallet's card picture, and the figure of the "Churn" progress screen
 - `asset_sources/*/fourbc_wallet/`: icon, launch picture, logo
 - `integration_test/local_screenshots/`: a test that walks the first screens and saves pictures (it can also make a throwaway test-network wallet, to picture a wallet's screens, and go on through every screen that can be reached without coins), two that show an animation file with the app's own player (one of them as the Tor settings screen plays it), and one that shows the "Churn" figure by itself
